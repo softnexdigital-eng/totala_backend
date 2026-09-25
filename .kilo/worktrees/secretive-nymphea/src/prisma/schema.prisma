@@ -1,0 +1,214 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Patient {
+  id            String   @id @default(cuid())
+  name          String
+  phone         String   @unique
+  age           Int?
+  address       String?
+  password      String?
+  isRegistered  Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  appointments  Appointment[]
+  bookings      Booking[]
+}
+
+model Doctor {
+  id             String   @id @default(cuid())
+  name          String
+  specialization String?
+  fee           Float?
+  hospital      String?
+  phone         String?   @unique
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  appointments  Appointment[]
+}
+
+model Agent {
+  id          String   @id @default(cuid())
+  name        String
+  phone       String   @unique
+  email       String?
+  password    String?
+  permissions Json?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  appointments Appointment[]
+  tasks        Task[]
+  payments     Payment[]
+  bookings     Booking[]
+}
+
+model Appointment {
+  id                String   @id @default(cuid())
+  patientId         String?
+  doctorId          String?
+  agentId           String?
+  packageId         String?
+  hospital          String?
+  date              DateTime
+  status            String   @default("pending")
+  serviceType       String   @default("online")
+  serviceFee        Float    @default(50)
+  packagePrice      Float?
+  packageDiscount   Int?     @default(0)
+  packageFinalPrice Float?
+  discountPercent   Int?     @default(0)
+  notes             String?
+  whatsappNumber    String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  patient           Patient?   @relation(fields: [patientId], references: [id])
+  doctor            Doctor?    @relation(fields: [doctorId], references: [id])
+  agent             Agent?     @relation(fields: [agentId], references: [id])
+  package           Package?   @relation(fields: [packageId], references: [id])
+  tests             Test[]
+  tasks             Task[]
+  payments          Payment[]
+}
+
+model Test {
+  id               String   @id @default(cuid())
+  appointmentId    String
+  testName         String
+  actualCost       Float
+  discountPercent  Int?     @default(0)
+  finalCost        Float
+  reportUrl        String?
+  prescriptionUrl  String?
+  receiptUrl       String?
+  status           String   @default("pending")
+  uploadedAt       DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  appointment      Appointment @relation(fields: [appointmentId], references: [id])
+}
+
+model Task {
+  id                  String   @id @default(cuid())
+  appointmentId       String
+  agentId             String
+  taskStatus          String   @default("ASSIGNED")
+  specialInstructions String?
+  notes               String?
+  discountPercent     Int?     @default(0)
+  discountAmount      Float?   @default(0)
+  transactionId       String?
+  bkashNumber         String?
+  startedAt           DateTime?
+  completedAt         DateTime?
+  receiveTime         DateTime?
+  startTime           DateTime?
+  endTime             DateTime?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  appointment Appointment @relation(fields: [appointmentId], references: [id])
+  agent       Agent       @relation(fields: [agentId], references: [id])
+  payments    Payment[]
+}
+
+model Payment {
+  id             String   @id @default(cuid())
+  taskId         String
+  appointmentId  String
+  agentId        String
+  amount         Float
+  paymentMethod  String
+  paymentStatus  String   @default("PENDING")
+  transactionId  String?
+  senderNumber   String?
+  paymentDate    DateTime?
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  task       Task       @relation(fields: [taskId], references: [id])
+  appointment Appointment @relation(fields: [appointmentId], references: [id])
+  agent      Agent      @relation(fields: [agentId], references: [id])
+}
+
+model Package {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  transportCost   Float    @default(0)
+  guidanceFee     Float    @default(0)
+  doctorFee       Float    @default(0)
+  testFee         Float    @default(0)
+  totalPrice      Float
+  discountPercent Int?     @default(0)
+  finalPrice      Float
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  appointments    Appointment[]
+}
+
+model Admin {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  password        String
+  name            String
+  role            String   @default("admin")
+  whatsappNumber  String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model OTP {
+  id        String   @id @default(cuid())
+  email     String
+  otp       String
+  expiresAt DateTime
+  isUsed    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
+/// A booking request submitted from the public landing page ("Book Now" modal).
+/// The Super Admin reviews these under "Agent Booking Requests".
+model Booking {
+  id              String    @id @default(cuid())
+  patientId       String?
+  agentId         String?
+  patientName     String
+  patientPhone    String
+  patientAge      Int?
+  patientGender   String?
+  patientAddress  String?
+  serviceNeeded   String
+  preferredDate   DateTime?
+  preferredTime   String?
+  hospital        String?
+  bookingReason   String?
+  additionalNote  String?
+  status          String    @default("PENDING")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  patient Patient? @relation(fields: [patientId], references: [id])
+  agent   Agent?   @relation(fields: [agentId], references: [id])
+
+  @@index([status])
+  @@index([agentId])
+  @@index([patientPhone])
+}

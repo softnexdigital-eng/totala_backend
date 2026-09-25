@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE "Task" ADD COLUMN "transactionId" TEXT;
+ALTER TABLE "Task" ADD COLUMN "bkashNumber" TEXT;
+ALTER TABLE "Task" ADD COLUMN "receiveTime" TIMESTAMP(3);
+ALTER TABLE "Task" ADD COLUMN "startTime" TIMESTAMP(3);
+ALTER TABLE "Task" ADD COLUMN "endTime" TIMESTAMP(3);
