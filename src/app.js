@@ -57,6 +57,36 @@ app.use('/api/reports', reportRoutes)
 app.use('/api/dashboard', dashboardRoutes)
 app.use('/api/transport', transportRoutes)
 
+// API info at root
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Help Center API is running',
+    data: {
+      status: 'OK',
+      version: '1.0.0',
+      endpoints: {
+        health: '/api/health',
+        auth: '/api/auth',
+        patients: '/api/patients',
+        doctors: '/api/doctors',
+        appointments: '/api/appointments',
+        bookings: '/api/bookings',
+        agents: '/api/agents',
+        tasks: '/api/tasks',
+        payments: '/api/payments',
+        packages: '/api/packages',
+        reports: '/api/reports',
+        dashboard: '/api/dashboard',
+        transport: '/api/transport'
+      },
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV
+    },
+    error: null
+  })
+})
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({
