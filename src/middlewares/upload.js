@@ -8,13 +8,19 @@ import fs from 'fs'
  */
 
 // Ensure upload directories exist
+// NOTE: On serverless hosts (e.g. Vercel) the deployment filesystem is
+// read-only, so a failure here must not crash the app during import.
 const uploadBaseDirs = ['prescriptions', 'receipts', 'reports']
 const uploadBasePath = 'uploads'
 
 uploadBaseDirs.forEach((dir) => {
   const fullPath = path.join(uploadBasePath, dir)
-  if (!fs.existsSync(fullPath)) {
-    fs.mkdirSync(fullPath, { recursive: true })
+  try {
+    if (!fs.existsSync(fullPath)) {
+      fs.mkdirSync(fullPath, { recursive: true })
+    }
+  } catch {
+    // Read-only filesystem — upload attempts will fail at request time instead
   }
 })
 
@@ -27,9 +33,13 @@ const storage = multer.diskStorage({
     const dir = validDirs.includes(subdir) ? subdir : 'reports'
     const fullPath = path.join(uploadBasePath, dir)
 
-    // Ensure directory exists
-    if (!fs.existsSync(fullPath)) {
-      fs.mkdirSync(fullPath, { recursive: true })
+    // Ensure directory exists (may fail on read-only serverless filesystems)
+    try {
+      if (!fs.existsSync(fullPath)) {
+        fs.mkdirSync(fullPath, { recursive: true })
+      }
+    } catch (err) {
+      return cb(new Error(`ফাইল আপলোড করা যাচ্ছে না: সার্ভারের ফাইল সিস্টেম রিড-অনলি (${err.code || err.message})`), undefined)
     }
 
     cb(null, fullPath)
