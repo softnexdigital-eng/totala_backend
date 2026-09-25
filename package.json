@@ -7,12 +7,19 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
+    "postinstall": "prisma generate --schema src/prisma/schema.prisma",
     "prisma:generate": "prisma generate --schema src/prisma/schema.prisma",
     "prisma:migrate": "prisma migrate dev --schema src/prisma/schema.prisma",
     "prisma:studio": "prisma studio --schema src/prisma/schema.prisma",
     "seed": "node src/utils/seed.js"
   },
-  "keywords": ["help-center", "backend", "express", "prisma", "postgresql"],
+  "keywords": [
+    "help-center",
+    "backend",
+    "express",
+    "prisma",
+    "postgresql"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -27,7 +34,6 @@
     "nodemailer": "^6.9.14"
   },
   "devDependencies": {
-    "@prisma/client": "^5.22.0",
     "nodemon": "^3.1.14",
     "prisma": "^5.22.0"
   }
