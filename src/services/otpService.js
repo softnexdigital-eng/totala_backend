@@ -37,7 +37,7 @@ export const createAndSendOTP = async (email) => {
   // request responds instantly instead of waiting on Gmail SMTP (~6s).
   // Errors are caught here so a failed email never crashes the request.
   sendOtpEmail(email, otp).catch((error) => {
-    console.error('Background OTP email failed:', error.message)
+    console.error(`Failed to send OTP email to ${email}:`, error.message)
   })
 
   return otp
@@ -50,22 +50,19 @@ export const createAndSendOTP = async (email) => {
  * @returns {Promise<boolean>} - True if valid
  */
 export const verifyOTP = async (email, otp) => {
-  // Find the most recent unused, unexpired OTP for this email
   const otpRecord = await prisma.oTP.findFirst({
     where: {
       email,
-      otp,
       isUsed: false,
       expiresAt: { gt: new Date() }
     },
     orderBy: { createdAt: 'desc' }
   })
 
-  if (!otpRecord) {
+  if (!otpRecord || otpRecord.otp !== otp) {
     throw new Error('অবৈধ OTP বা এটির মেয়াদ ওড়েছে অথবা ইউস করা হয়েছে')
   }
 
-  // Mark OTP as used
   await prisma.oTP.update({
     where: { id: otpRecord.id },
     data: { isUsed: true }

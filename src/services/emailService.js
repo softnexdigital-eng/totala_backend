@@ -6,10 +6,17 @@ dotenv.config()
 /**
  * Nodemailer transporter using Gmail SMTP
  */
+const requiredSmtpEnvVars = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'SMTP_FROM']
+const missingEnvVars = requiredSmtpEnvVars.filter(key => !process.env[key])
+
+if (missingEnvVars.length > 0) {
+  console.error(`Missing required SMTP environment variables: ${missingEnvVars.join(', ')}`)
+}
+
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT),
-  secure: false, // true for 465, false for other ports
+  secure: false,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS
@@ -32,10 +39,16 @@ export const sendEmail = async (to, subject, text, html) => {
       text,
       html
     })
-    console.log(`📧 Email sent to ${to}: ${info.messageId}`)
+    console.log(`Email sent to ${to}: ${info.messageId}`)
     return info
   } catch (error) {
-    console.error('Email send error:', error)
+    console.error('Email send error:', {
+      message: error.message,
+      code: error.code,
+      response: error.response,
+      to,
+      subject
+    })
     throw new Error('ইমেল পাঠাতে সমস্যা হয়েছে')
   }
 }

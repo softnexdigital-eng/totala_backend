@@ -3,7 +3,6 @@ node_modules/
 .next/
 
 # environment
-.env
 .env.example
 
 # build outputs
@@ -17,7 +16,6 @@ yarn-debug.log*
 yarn-error.log*
 
 # IDE
-.vscode/
 .idea/
 *.swp
 *.swo
@@ -31,3 +29,4 @@ Thumbs.db
 *.key
 *.log
 
+config.bat
